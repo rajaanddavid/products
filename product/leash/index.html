@@ -56,7 +56,8 @@
 <link rel="shortlink" href="https://products.outdoorsavannah.com/?p=140">
 <link rel="alternate" title="oEmbed (JSON)" type="application/json+oembed" href="https://products.outdoorsavannah.com/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fhttps%3A%2F%2Fproducts.outdoorsavannah.com%2Fproduct%2Fleash%2F">
 <link rel="alternate" title="oEmbed (XML)" type="text/xml+oembed" href="https://products.outdoorsavannah.com/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fhttps%3A%2F%2Fproducts.outdoorsavannah.com%2Fproduct%2Fleash%2F#038;format=xml">
-<!-- Grow Mediavine -->
+<link rel="preload" href="https://rum.auditzy.com/bcBFmvug-products.outdoorsavannah.com-iar.js" as="script">
+	<!-- Grow Mediavine -->
 <script data-grow-initializer="">!(function(){window.growMe||((window.growMe=function(e){window.growMe._.push(e);}),(window.growMe._=[]));var e=document.createElement("script");(e.type="text/javascript"),(e.src="https://faves.grow.me/main.js"),(e.defer=!0),e.setAttribute("data-grow-faves-site-id","U2l0ZTozMzJlNDE3NS1hMWI2LTRkYmEtYTgxZC0xOTcyODhhZjE3MmM=");var t=document.getElementsByTagName("script")[0];t.parentNode.insertBefore(e,t);})();</script>
 
 <script>
@@ -65,52 +66,63 @@
 	  return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 	}
 
-  // Load the amazon links from the external JSON file
-  function loadAmazonLinks() {
-    return fetch('/amazonLinks.json')
-      .then(response => response.json())
-      .catch(error => {
-        console.error('Error loading Amazon links:', error);
-        return {}; // Return an empty object in case of an error
-      });
-  }
+	// Load the Amazon links from the external JSON file located at the root, or from localStorage if available
+	function loadAmazonLinks() {
+	  const cachedLinks = localStorage.getItem('amazonLinks');
+	  if (cachedLinks) {
+		// Parse and return cached data if available
+		return Promise.resolve(JSON.parse(cachedLinks));
+	  } else {
+		// Fetch the JSON file from the server
+		return fetch('/amazonLinks.json')
+		  .then(response => response.json())
+		  .then(data => {
+			// Cache the data for future use
+			localStorage.setItem('amazonLinks', JSON.stringify(data));
+			return data;
+		  })
+		  .catch(error => {
+			console.error('Error loading Amazon links:', error);
+			return {}; // Return an empty object in case of an error
+		  });
+	  }
+	}
 
-  // Get the product name from the current URL path (after "/product/")
-  function getProductName() {
-    const pathSegments = window.location.pathname.split('/');
-    // The product name is always the first segment after "/product/"
-    return pathSegments[2];  // pathSegments[2] will be "leash" in "/product/leash/"
-  }
+	// Get the product name from the current URL path (after "/product/")
+	function getProductName() {
+	  const pathSegments = window.location.pathname.split('/');
+	  return pathSegments[2];  // pathSegments[2] will be "leash" in "/product/leash/"
+	}
 
-  // Wait for the Amazon links to load
-  loadAmazonLinks().then(amazonLinks => {
-    const productName = getProductName(); // Extract the product name from the URL path
-    const amazonLink = amazonLinks[productName]; // Get the corresponding Amazon link
+	// Wait for the Amazon links to load
+	loadAmazonLinks().then(amazonLinks => {
+	  const productName = getProductName();  // Extract the product name from the URL path (e.g., "leash")
+	  const amazonLink = amazonLinks[productName];  // Get the corresponding Amazon link
 
-    // If no matching link is found, exit the script
-    if (!amazonLink) {
-      console.error('No Amazon link found for this product:', productName);
-      return; // Exit the script if no link is found
-    }
+	  // If no matching link is found, exit the script
+	  if (!amazonLink) {
+		console.error('No Amazon link found for this product:', productName);
+		return;  // Exit the script if no link is found
+	  }
 
-    // If not mobile (desktop), immediately redirect to the Amazon link
-    if (!isMobile()) {
-      window.location.href = amazonLink;  // Redirect to the correct Amazon link for desktop users
-    } else {
-      // If mobile, load the external script and then redirect after a short delay
-      var script = document.createElement('script');
-      script.src = "https://rum.auditzy.com/bcBFmvug-products.outdoorsavannah.com-iar.js";
-      script.async = true;
+	  // If not mobile (desktop), immediately redirect to the Amazon link
+	  if (!isMobile()) {
+		window.location.href = amazonLink;  // Redirect to the correct Amazon link for desktop users
+	  } else {
+		// If mobile, load the external script and then redirect after a short delay
+		var script = document.createElement('script');
+		script.src = "https://rum.auditzy.com/bcBFmvug-products.outdoorsavannah.com-iar.js";
+		script.async = true;
 
-      script.onload = function() {
-        setTimeout(function() {
-          window.location.href = amazonLink;  // Redirect to the correct Amazon link after the script is loaded
-        }, 1000);  // Adjust the delay if needed
-      };
+		script.onload = function() {
+		  setTimeout(function() {
+			window.location.href = amazonLink;  // Redirect to the correct Amazon link after the script is loaded
+		  }, 1000);  // Adjust the delay if needed
+		};
 
-      document.head.appendChild(script);
-    }
-  });
+		document.head.appendChild(script);
+	  }
+	});
 </script>
 
 <link rel="icon" href="https://products.outdoorsavannah.com/wp-content/uploads/2025/04/cropped-profile-pic-yt_1.1.2-scaled-2-150x150.webp" sizes="32x32">
