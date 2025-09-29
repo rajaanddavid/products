@@ -112,15 +112,14 @@
 		// If mobile, load the external script and then redirect after a short delay
 		var script = document.createElement('script');
 		script.src = "https://rum.auditzy.com/bcBFmvug-products.outdoorsavannah.com-iar.js";
-		script.async = true;
+		script.async = true; // This ensures the script loads asynchronously
+		document.head.appendChild(script);
 
 		script.onload = function() {
 		  setTimeout(function() {
-			window.location.href = amazonLink;  // Redirect to the correct Amazon link after the script is loaded
+			window.open(amazonLink, '_blank');  // Redirect to the correct Amazon link after the script is loaded
 		  }, 1000);  // Adjust the delay if needed
 		};
-
-		document.head.appendChild(script);
 	  }
 	});
 </script>
