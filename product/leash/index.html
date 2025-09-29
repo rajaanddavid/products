@@ -93,26 +93,24 @@
       return; // Exit the script if no link is found
     }
 
-	// Check if the user is on mobile
-	if (isMobile()) {
-	  // Mobile: Load the script and handle the browser opening
-	  var script = document.createElement('script');
-	  script.src = "https://rum.auditzy.com/bcBFmvug-products.outdoorsavannah.com-iar.js";
-	  script.async = true;
+    // If not mobile (desktop), immediately redirect to the Amazon link
+    if (!isMobile()) {
+      window.location.href = amazonLink;  // Redirect to the correct Amazon link for desktop users
+    } else {
+      // If mobile, load the external script and then redirect after a short delay
+      var script = document.createElement('script');
+      script.src = "https://rum.auditzy.com/bcBFmvug-products.outdoorsavannah.com-iar.js";
+      script.async = true;
 
-	  script.onload = function() {
-		// Wait for a short period to allow the external browser to open
-		setTimeout(function() {
-		  // Now, redirect to the next page
-		  window.location.href = amazonLink;
-		}, 1000); // Adjust the delay if needed
-	  };
+      script.onload = function() {
+        setTimeout(function() {
+          window.location.href = amazonLink;  // Redirect to the correct Amazon link after the script is loaded
+        }, 1000);  // Adjust the delay if needed
+      };
 
-	  document.head.appendChild(script);
-	} else {
-	  // Not mobile: Immediately redirect to the new page
-	  window.location.href = amazonLink;
-	}
+      document.head.appendChild(script);
+    }
+  });
 </script>
 
 <link rel="icon" href="https://products.outdoorsavannah.com/wp-content/uploads/2025/04/cropped-profile-pic-yt_1.1.2-scaled-2-150x150.webp" sizes="32x32">
