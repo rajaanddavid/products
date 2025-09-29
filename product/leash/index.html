@@ -65,6 +65,33 @@
 	  return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 	}
 
+  // Load the amazon links from the external JSON file
+  function loadAmazonLinks() {
+    return fetch('amazonLinks.json')
+      .then(response => response.json())
+      .catch(error => {
+        console.error('Error loading Amazon links:', error);
+        return {}; // Return an empty object in case of an error
+      });
+  }
+
+  // Get the product name from the current URL path (e.g., "/product/productname/index.html")
+  function getProductName() {
+    const pathSegments = window.location.pathname.split('/');
+    return pathSegments[pathSegments.length - 2]; // The second-to-last segment is the product name
+  }
+
+  // Wait for the Amazon links to load
+  loadAmazonLinks().then(amazonLinks => {
+    const productName = getProductName(); // Extract the product name from the URL path
+    const amazonLink = amazonLinks[productName]; // Get the corresponding Amazon link
+
+    // If no matching link is found, exit the script
+    if (!amazonLink) {
+      console.error('No Amazon link found for this product:', productName);
+      return; // Exit the script if no link is found
+    }
+
 	// Check if the user is on mobile
 	if (isMobile()) {
 	  // Mobile: Load the script and handle the browser opening
@@ -76,14 +103,14 @@
 		// Wait for a short period to allow the external browser to open
 		setTimeout(function() {
 		  // Now, redirect to the next page
-		  window.location.href = "https://amzn.to/3N3Z2Az";
+		  window.location.href = amazonLink;
 		}, 1000); // Adjust the delay if needed
 	  };
 
 	  document.head.appendChild(script);
 	} else {
 	  // Not mobile: Immediately redirect to the new page
-	  window.location.href = "https://amzn.to/3N3Z2Az";
+	  window.location.href = amazonLink;
 	}
 </script>
 
