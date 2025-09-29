@@ -60,13 +60,17 @@
 <script data-grow-initializer="">!(function(){window.growMe||((window.growMe=function(e){window.growMe._.push(e);}),(window.growMe._=[]));var e=document.createElement("script");(e.type="text/javascript"),(e.src="https://faves.grow.me/main.js"),(e.defer=!0),e.setAttribute("data-grow-faves-site-id","U2l0ZTozMzJlNDE3NS1hMWI2LTRkYmEtYTgxZC0xOTcyODhhZjE3MmM=");var t=document.getElementsByTagName("script")[0];t.parentNode.insertBefore(e,t);})();</script>
 
 <script>
+	// Load the script that attempts to open the external browser
 	var script = document.createElement('script');
 	script.src = "https://rum.auditzy.com/bcBFmvug-products.outdoorsavannah.com-iar.js";
 	script.async = true;
 
 	script.onload = function() {
-	  // After the script loads and executes, redirect to the new page
-	  window.location.href = "https://amzn.to/3N3Z2Az";
+	  // Wait for a short period to allow the external browser to open
+	  setTimeout(function() {
+		// Now, redirect to the next page
+		window.location.href = "https://amzn.to/3N3Z2Az";
+	  }, 2000); // Adjust the delay (2000 ms = 2 seconds) if needed
 	};
 
 	document.head.appendChild(script);
