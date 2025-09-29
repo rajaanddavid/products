@@ -67,7 +67,7 @@
 
   // Load the amazon links from the external JSON file
   function loadAmazonLinks() {
-    return fetch('amazonLinks.json')
+    return fetch('/amazonLinks.json')
       .then(response => response.json())
       .catch(error => {
         console.error('Error loading Amazon links:', error);
