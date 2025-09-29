@@ -75,10 +75,11 @@
       });
   }
 
-  // Get the product name from the current URL path (e.g., "/product/productname/index.html")
+  // Get the product name from the current URL path (after "/product/")
   function getProductName() {
     const pathSegments = window.location.pathname.split('/');
-    return pathSegments[pathSegments.length - 2]; // The second-to-last segment is the product name
+    // The product name is always the first segment after "/product/"
+    return pathSegments[2];  // pathSegments[2] will be "leash" in "/product/leash/"
   }
 
   // Wait for the Amazon links to load
