@@ -110,39 +110,35 @@
 	}
 
   // Function to update the button link based on browser
-  function updateButtonLink(amazonLinks) {
-    const buttonLink = document.querySelector('.wp-block-button__link');
+	function updateButtonLink(amazonLinks) {
+	  const buttonLink = document.querySelector('.wp-block-button__link');
+	  const productName = getProductName();
+	  const productLinks = amazonLinks[productName];
 
-    // Get the product name from the current URL path and get the corresponding Amazon link
-    const productName = getProductName();
-    const amazonLink = amazonLinks[productName];  // Link for the button
+	  if (!productLinks || !productLinks.primary || !productLinks.secondary) {
+		console.error('Missing Amazon link(s) for product:', productName);
+		return;
+	  }
 
-    if (!amazonLink) {
-      console.error('No Amazon link found for this product:', productName);
-      return;  // Exit the function if no link is found
-    }
+	  const primaryLink = productLinks.primary;
+	  const secondaryLink = productLinks.secondary;
 
-    // Define the secondary link (same as the button's default link)
-    const secondaryLink = "https://links.outdoorsavannah.com/amazon-leash";  // Secondary link (same as default)
-
-    // Update the button's link based on whether the user is using Safari or not
-    if (isSafari()) {
-      buttonLink.href = amazonLink; // Safari users get the primary Amazon link
-    } else {
-      buttonLink.href = secondaryLink; // Non-Safari users get the secondary link
-    }
-  }
+	  if (isSafari()) {
+		buttonLink.href = primaryLink;
+	  } else {
+		buttonLink.href = secondaryLink;
+	  }
+	}
 
 	// Wait for the Amazon links to load
 	loadAmazonLinks().then(amazonLinks => {
 	  const productName = getProductName();  // Extract the product name from the URL path (e.g., "leash")
-	  const amazonLink = amazonLinks[productName];  // Get the corresponding Amazon link
-
-	  // If no matching link is found, exit the script
-	  if (!amazonLink) {
-		console.error('No Amazon link found for this product:', productName);
-		return;  // Exit the script if no link is found
-	  }
+		const productLinks = amazonLinks[productName];
+		if (!productLinks || !productLinks.primary) {
+			console.error('No Amazon link found for this product:', productName);
+			return;
+		}
+		const amazonLink = productLinks.primary;
 
 	  	  // Prevent the redirect loop by checking sessionStorage
 	  if (sessionStorage.getItem('redirected')) {

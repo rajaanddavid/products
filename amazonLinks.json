@@ -1,3 +1,6 @@
 {
-  "leash": "https://amzn.to/3N3Z2Az"
+  "leash": {
+    "primary": "https://amzn.to/3N3Z2Az",
+    "secondary": "https://links.outdoorsavannah.com/amazon-leash"
+  }
 }
