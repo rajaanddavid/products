@@ -81,6 +81,26 @@
     return /Safari/i.test(userAgent) && !/Chrome/i.test(userAgent);
   }
 
+	function isInstagramAppBrowser() {
+    return /Instagram/i.test(navigator.userAgent);
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    const entryHeader = document.querySelector('.entry-title');
+    if (!entryHeader) return;
+
+    if (isInstagramAppBrowser()) {
+      entryHeader.textContent = "Redirecting... please wait";
+    } else {
+      if (isAndroid()) {
+        entryHeader.textContent = "Allow or tap again";
+      } else if (isIOS()) {
+        entryHeader.textContent = "Redirecting... please wait";
+      } else {
+        // Desktop: leave the original text
+      }
+    }
+
 	// Load the Amazon links from the external JSON file located at the root, or from localStorage if available
 	function loadAmazonLinks() {
 	  const cachedLinks = localStorage.getItem('amazonLinks');
