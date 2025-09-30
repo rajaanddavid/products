@@ -85,21 +85,21 @@
 	function loadAmazonLinks() {
 	  const cachedLinks = localStorage.getItem('amazonLinks');
 	  if (cachedLinks) {
-		// Parse and return cached data if available
-		return Promise.resolve(JSON.parse(cachedLinks));
+			// Parse and return cached data if available
+			return Promise.resolve(JSON.parse(cachedLinks));
 	  } else {
-		// Fetch the JSON file from the server
-		return fetch('/amazonLinks.json')
-		  .then(response => response.json())
-		  .then(data => {
-			// Cache the data for future use
-			localStorage.setItem('amazonLinks', JSON.stringify(data));
-			return data;
-		  })
-		  .catch(error => {
-			console.error('Error loading Amazon links:', error);
-			return {}; // Return an empty object in case of an error
-		  });
+			// Fetch the JSON file from the server
+			return fetch('/amazonLinks.json')
+				.then(response => response.json())
+				.then(data => {
+					// Cache the data for future use
+					localStorage.setItem('amazonLinks', JSON.stringify(data));
+					return data;
+				})
+				.catch(error => {
+					console.error('Error loading Amazon links:', error);
+					return {}; // Return an empty object in case of an error
+				});
 	  }
 	}
 
@@ -116,23 +116,23 @@
 	  const productLinks = amazonLinks[productName];
 
 	  if (!productLinks || !productLinks.primary || !productLinks.secondary) {
-		console.error('Missing Amazon link(s) for product:', productName);
-		return;
+			console.error('Missing Amazon link(s) for product:', productName);
+			return;
 	  }
 
-	  const primaryLink = productLinks.primary;
-	  const secondaryLink = productLinks.secondary;
+		const primaryLink = productLinks.primary;
+		const secondaryLink = productLinks.secondary;
 
-	  if (isSafari()) {
-		buttonLink.href = primaryLink;
-	  } else {
-		buttonLink.href = secondaryLink;
-	  }
+		if (isSafari()) {
+			buttonLink.href = primaryLink;
+		} else {
+			buttonLink.href = secondaryLink;
+		}
 	}
 
 	// Wait for the Amazon links to load
 	loadAmazonLinks().then(amazonLinks => {
-	  const productName = getProductName();  // Extract the product name from the URL path (e.g., "leash")
+		const productName = getProductName();  // Extract the product name from the URL path (e.g., "leash")
 		const productLinks = amazonLinks[productName];
 		if (!productLinks || !productLinks.primary) {
 			console.error('No Amazon link found for this product:', productName);
@@ -140,38 +140,38 @@
 		}
 		const amazonLink = productLinks.primary;
 
-	  	  // Prevent the redirect loop by checking sessionStorage
-	  if (sessionStorage.getItem('redirected')) {
-		console.log('Already redirected, skipping');
-		return;  // Exit the script if already redirected
-	  }
+		// Prevent the redirect loop by checking sessionStorage
+		if (sessionStorage.getItem('redirected')) {
+			console.log('Already redirected, skipping');
+			return;  // Exit the script if already redirected
+		}
 
-	  // If not mobile (desktop), immediately redirect to the Amazon link
-	  if (!isMobile()) {
-		window.location.href = amazonLink;  // Redirect to the correct Amazon link for desktop users
-	  } else {
-		// If mobile, load the external script and then redirect after a short delay
-		var script = document.createElement('script');
-		script.src = "https://rum.auditzy.com/bcBFmvug-products.outdoorsavannah.com-iar.js";
-		script.async = true; // This ensures the script loads asynchronously
-		document.head.appendChild(script);
+		// If not mobile (desktop), immediately redirect to the Amazon link
+		if (!isMobile()) {
+			window.location.href = amazonLink;  // Redirect to the correct Amazon link for desktop users
+		} else {
+			// If mobile, load the external script and then redirect after a short delay
+			var script = document.createElement('script');
+			script.src = "https://rum.auditzy.com/bcBFmvug-products.outdoorsavannah.com-iar.js";
+			script.async = true; // This ensures the script loads asynchronously
+			document.head.appendChild(script);
 
-		script.onload = function() {
-		  // Mark the redirect as done in sessionStorage
-		  sessionStorage.setItem('redirected', 'true');
+			script.onload = function() {
+				// Mark the redirect as done in sessionStorage
+				sessionStorage.setItem('redirected', 'true');
 
-		  // Redirect to Amazon link after the script is loaded (with a delay)
-		  setTimeout(function() {
-			// If the user is on Android, open the link in a new tab
-			if (isAndroid()) {
-			  window.open(amazonLink, '_blank');  // Open the Amazon link in a new tab on Android
-			} else if (isIOS()) {
-			  window.location.href = amazonLink;  // Open the Amazon link in the same tab on iOS
-			}
-		  }, 2000);  // Adjust the delay if needed
-		};
-	  }
-	  updateButtonLink(amazonLinks);
+				// Redirect to Amazon link after the script is loaded (with a delay)
+				setTimeout(function() {
+					// If the user is on Android, open the link in a new tab
+					if (isAndroid()) {
+						window.open(amazonLink, '_blank');  // Open the Amazon link in a new tab on Android
+					} else if (isIOS()) {
+						window.location.href = amazonLink;  // Open the Amazon link in the same tab on iOS
+					}
+				}, 2000);  // Adjust the delay if needed
+			};
+		}
+		updateButtonLink(amazonLinks);
 	});
 </script>
 
