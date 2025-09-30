@@ -65,6 +65,15 @@
 	function isMobile() {
 	  return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 	}
+		// Function to check if the user is on an Android device
+	function isAndroid() {
+	  return /Android/i.test(navigator.userAgent);
+	}
+
+	// Function to check if the user is on an iOS device
+	function isIOS() {
+	  return /iPhone|iPad|iPod/i.test(navigator.userAgent);
+	}
 
 	// Load the Amazon links from the external JSON file located at the root, or from localStorage if available
 	function loadAmazonLinks() {
@@ -117,8 +126,13 @@
 
 		script.onload = function() {
 		  setTimeout(function() {
-			window.open(amazonLink, '_blank');  // Redirect to the correct Amazon link after the script is loaded
-		  }, 1000);  // Adjust the delay if needed
+			// If the user is on Android, open the link in a new tab
+			if (isAndroid()) {
+			  window.open(amazonLink, '_blank');  // Open the Amazon link in a new tab on Android
+			} else if (isIOS()) {
+			  window.location.href = amazonLink;  // Open the Amazon link in the same tab on iOS
+			}
+		  }, 2000);  // Adjust the delay if needed
 		};
 	  }
 	});
