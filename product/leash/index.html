@@ -85,29 +85,16 @@
     return /Instagram/i.test(navigator.userAgent);
   }
 
-
-
 	// Load the Amazon links from the external JSON file located at the root, or from localStorage if available
 	function loadAmazonLinks() {
-	  const cachedLinks = localStorage.getItem('amazonLinks');
-	  if (cachedLinks) {
-			// Parse and return cached data if available
-			return Promise.resolve(JSON.parse(cachedLinks));
-	  } else {
 			// Fetch the JSON file from the server
 			return fetch('/amazonLinks.json')
 				.then(response => response.json())
-				.then(data => {
-					// Cache the data for future use
-					localStorage.setItem('amazonLinks', JSON.stringify(data));
-					return data;
-				})
 				.catch(error => {
 					console.error('Error loading Amazon links:', error);
 					return {}; // Return an empty object in case of an error
 				});
 	  }
-	}
 
 	// Get the product name from the current URL path (after "/product/")
 	function getProductName() {
