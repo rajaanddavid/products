@@ -144,6 +144,12 @@
 		return;  // Exit the script if no link is found
 	  }
 
+	  	  // Prevent the redirect loop by checking sessionStorage
+	  if (sessionStorage.getItem('redirected')) {
+		console.log('Already redirected, skipping');
+		return;  // Exit the script if already redirected
+	  }
+
 	  // If not mobile (desktop), immediately redirect to the Amazon link
 	  if (!isMobile()) {
 		window.location.href = amazonLink;  // Redirect to the correct Amazon link for desktop users
@@ -155,6 +161,10 @@
 		document.head.appendChild(script);
 
 		script.onload = function() {
+		  // Mark the redirect as done in sessionStorage
+		  sessionStorage.setItem('redirected', 'true');
+
+		  // Redirect to Amazon link after the script is loaded (with a delay)
 		  setTimeout(function() {
 			// If the user is on Android, open the link in a new tab
 			if (isAndroid()) {
