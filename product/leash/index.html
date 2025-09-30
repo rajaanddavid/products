@@ -75,6 +75,12 @@
 	  return /iPhone|iPad|iPod/i.test(navigator.userAgent);
 	}
 
+	  // Function to detect Safari browser
+  function isSafari() {
+    const userAgent = navigator.userAgent;
+    return /Safari/i.test(userAgent) && !/Chrome/i.test(userAgent);
+  }
+
 	// Load the Amazon links from the external JSON file located at the root, or from localStorage if available
 	function loadAmazonLinks() {
 	  const cachedLinks = localStorage.getItem('amazonLinks');
@@ -102,6 +108,30 @@
 	  const pathSegments = window.location.pathname.split('/');
 	  return pathSegments[2];  // pathSegments[2] will be "leash" in "/product/leash/"
 	}
+
+  // Function to update the button link based on browser
+  function updateButtonLink(amazonLinks) {
+    const buttonLink = document.querySelector('.wp-block-button__link');
+
+    // Get the product name from the current URL path and get the corresponding Amazon link
+    const productName = getProductName();
+    const amazonLink = amazonLinks[productName];  // Link for the button
+
+    if (!amazonLink) {
+      console.error('No Amazon link found for this product:', productName);
+      return;  // Exit the function if no link is found
+    }
+
+    // Define the secondary link (same as the button's default link)
+    const secondaryLink = "https://links.outdoorsavannah.com/amazon-leash";  // Secondary link (same as default)
+
+    // Update the button's link based on whether the user is using Safari or not
+    if (isSafari()) {
+      buttonLink.href = amazonLink; // Safari users get the primary Amazon link
+    } else {
+      buttonLink.href = secondaryLink; // Non-Safari users get the secondary link
+    }
+  }
 
 	// Wait for the Amazon links to load
 	loadAmazonLinks().then(amazonLinks => {
@@ -135,6 +165,7 @@
 		  }, 2000);  // Adjust the delay if needed
 		};
 	  }
+	  updateButtonLink(amazonLinks);
 	});
 </script>
 
@@ -271,7 +302,9 @@
 
 <div class="wp-block-column is-layout-flow wp-block-column-is-layout-flow">
 <div class="wp-block-buttons is-layout-flex wp-block-buttons-is-layout-flex">
-<div class="wp-block-button"><a class="wp-block-button__link wp-element-button" href="https://links.outdoorsavannah.com/amazon-leash" target="_blank" rel=" noreferrer noopener nofollow">Buy on Amazon</a></div>
+<div class="wp-block-button">
+	<a class="wp-block-button__link wp-element-button" href="https://links.outdoorsavannah.com/amazon-leash" target="_blank" rel="noreferrer noopener nofollow">Buy on Amazon</a>
+</div>
 </div>
 
 
