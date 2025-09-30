@@ -85,21 +85,7 @@
     return /Instagram/i.test(navigator.userAgent);
   }
 
-  document.addEventListener('DOMContentLoaded', function () {
-    const entryHeader = document.querySelector('.entry-title');
-    if (!entryHeader) return;
 
-    if (isInstagramAppBrowser()) {
-      entryHeader.textContent = "Redirecting... please wait";
-    } else {
-      if (isAndroid()) {
-        entryHeader.textContent = "Allow or tap again";
-      } else if (isIOS()) {
-        entryHeader.textContent = "Redirecting... please wait";
-      } else {
-        // Desktop: leave the original text
-      }
-    }
 
 	// Load the Amazon links from the external JSON file located at the root, or from localStorage if available
 	function loadAmazonLinks() {
@@ -155,8 +141,15 @@
 		}
 	}
 
-// Run once DOM is ready
 	document.addEventListener('DOMContentLoaded', function () {
+		const entryHeader = document.querySelector('.entry-title');
+		if (entryHeader) {
+			if (isInstagramAppBrowser()) entryHeader.textContent = "Redirecting... please wait";
+			else if (isAndroid()) entryHeader.textContent = "Allow or tap again";
+			else if (isIOS()) entryHeader.textContent = "Redirecting... please wait";
+			// Desktop: leave original
+		}
+
 		loadAmazonLinks().then(amazonLinks => {
 			const productName = getProductName();  // Extract the product name from the URL path (e.g., "leash")
 			const productLinks = amazonLinks[productName];
@@ -172,6 +165,8 @@
 				updateButtonLink(amazonLinks); // still update button for UI
 				return;  // Exit the script if already redirected
 			}
+
+			updateButtonLink(amazonLinks);
 
 			// If not mobile (desktop), immediately redirect to the Amazon link
 			if (!isMobile()) {
@@ -205,7 +200,6 @@
 					}, 2000);
 				};
 			}
-			updateButtonLink(amazonLinks);
 		});
 	});
 </script>
