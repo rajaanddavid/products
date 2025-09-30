@@ -86,6 +86,10 @@
     return /Instagram|FBAV|FBAN\/FBIOS|FB_IAB|FB4A|Threads|Barcelona/i.test(ua);
 }
 
+	function isFacebookBrowser() {
+			return /FBAN\/FBIOS|FBAV|FB_IAB|FB4A/i.test(navigator.userAgent);
+	}
+
 	// Load the Amazon links from the external JSON file located at the root, or from localStorage if available
 	function loadAmazonLinks() {
 			// Fetch the JSON file from the server
@@ -131,12 +135,25 @@
 
 	document.addEventListener('DOMContentLoaded', function () {
 		const entryHeader = document.querySelector('.entry-title');
-		if (entryHeader) {
-			if (isAppBrowser()) entryHeader.textContent = "Redirecting... please wait";
-			else if (isAndroid()) entryHeader.textContent = "Allow or tap again";
-			else if (isIOS()) entryHeader.textContent = "Redirecting... please wait";
-			// Desktop: leave original
-		}
+    if (isAppBrowser()) {
+        // App browser detected
+        if (isAndroid()) {
+            entryHeader.textContent = "Redirecting... please continue"; // Android app browsers
+        } else if (isIOS()) {
+            if (isFacebookBrowser()) {
+                entryHeader.textContent = "Redirecting... please continue"; // iOS Facebook
+            } else {
+                entryHeader.textContent = "Redirecting... please wait"; // iOS other apps
+            }
+        }
+    } else if (isAndroid()) {
+        // Android non-app browser
+        entryHeader.textContent = "Allow or tap again";
+    } else if (isIOS()) {
+        // iOS non-app browser
+        entryHeader.textContent = "Redirecting... please wait";
+    }
+    // Desktop (non-mobile) remains completely untouched
 
 		loadAmazonLinks().then(amazonLinks => {
 			const productName = getProductName();  // Extract the product name from the URL path (e.g., "leash")
