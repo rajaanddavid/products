@@ -81,9 +81,10 @@
     return /Safari/i.test(userAgent) && !/Chrome/i.test(userAgent);
   }
 
-	function isInstagramAppBrowser() {
-    return /Instagram/i.test(navigator.userAgent);
-  }
+  function isAppBrowser() {
+    const ua = navigator.userAgent;
+    return /Instagram|FBAV|FBAN|Threads/i.test(ua);
+}
 
 	// Load the Amazon links from the external JSON file located at the root, or from localStorage if available
 	function loadAmazonLinks() {
@@ -131,7 +132,7 @@
 	document.addEventListener('DOMContentLoaded', function () {
 		const entryHeader = document.querySelector('.entry-title');
 		if (entryHeader) {
-			if (isInstagramAppBrowser()) entryHeader.textContent = "Redirecting... please wait";
+			if (isAppBrowser()) entryHeader.textContent = "Redirecting... please wait";
 			else if (isAndroid()) entryHeader.textContent = "Allow or tap again";
 			else if (isIOS()) entryHeader.textContent = "Redirecting... please wait";
 			// Desktop: leave original
