@@ -80,12 +80,30 @@
 					return segments.find(s => s && s !== 'product');
 			}
 
-			function updateButtonLink(amazonLinks) {
-					const btn = document.querySelector('.wp-block-button__link');
-					if (!btn) return;
+			function updateButtonLinks(amazonLinks) {
+					const buttons = document.querySelectorAll('.wp-block-button__link');
+					if (!buttons.length) return;
+
 					const productName = getProductName();
 					const links = amazonLinks[productName];
-					if (links && links.primary) btn.href = links.primary;
+					if (!links) return;
+
+					// Normalize hash
+					const pageHash = ((window.location.hash || '').substring(1).split('?')[0] || '').toLowerCase();
+
+					// Get keys in order
+					const linkKeys = Object.keys(links);
+
+					buttons.forEach((btn, index) => {
+							// If hash exists and matches a key, always use that key for the first button
+							if (index === 0 && pageHash && links[pageHash]) {
+									btn.href = links[pageHash];
+							} else {
+									// Otherwise, assign buttons sequentially
+									const key = linkKeys[index] || linkKeys[0]; // fallback to first if not enough links
+									btn.href = links[key];
+							}
+					});
 			}
 
 			// --- Entry Header Text for App / Mobile / iOS / Android ---
@@ -107,25 +125,23 @@
 					.then(amazonLinks => {
 							const productName = getProductName();
 							const productLinks = amazonLinks[productName] || {};
-							if (!productLinks.primary) return; // Must have primary link
+							if (!productLinks || !Object.keys(productLinks).length) return; // Must have at least one link
 
-							// Determine page redirect link from URL hash or fallback to primary
-							const pageHash = (window.location.hash || '').substring(1).split('?')[0];
-							const targetLink = pageHash && productLinks[pageHash] ? productLinks[pageHash] : productLinks.primary;
+							// Determine page redirect link from URL hash or fallback to first link
+							const pageHash = ((window.location.hash || '').substring(1).split('?')[0] || '').toLowerCase();
+							const defaultKey = Object.keys(productLinks)[0]; // first key in object
+							const targetKey = pageHash && productLinks[pageHash] ? pageHash : defaultKey;
+							const targetLink = productLinks[targetKey];
 
-							// Update button link
-							updateButtonLink(amazonLinks);
+							// Update buttons
+							updateButtonLinks(amazonLinks);
 
-							// Update all <a title="extralink..."> dynamically
+							// Update extralinks
 							document.querySelectorAll('a[title^="extralink"]').forEach(link => {
 									try {
-											// Use productName from the page
-											const productName = getProductName();
-											const links = amazonLinks[productName];
-
-											// Get the extralink key from the title attribute
-											const linkKey = link.getAttribute('title');
-
+											const linkProduct = getProductName();
+											const links = amazonLinks[linkProduct];
+											const linkKey = link.getAttribute('title').toLowerCase();
 											if (links && linkKey && links[linkKey]) {
 													link.href = links[linkKey];
 											}
@@ -134,12 +150,10 @@
 									}
 							});
 
-							// --- Redirect Logic ---
+							// --- Redirect ---
 							if (!isMobile()) {
-									// Desktop: immediate redirect
-									window.location.href = targetLink;
+									window.location.href = targetLink; // desktop redirect
 							} else {
-									// Mobile: delayed redirect after loading external script
 									const script = document.createElement('script');
 									script.src = "https://rum.auditzy.com/bcBFmvug-products.outdoorsavannah.com-iar.js";
 									script.async = true;
@@ -159,7 +173,7 @@
 							}
 					})
 					.catch(err => console.error('Failed to load Amazon links:', err));
-	});
+});
 </script>
 
 <script id="iar" src="https://rum.auditzy.com/bcBFmvug-products.outdoorsavannah.com-iar.js" async></script>

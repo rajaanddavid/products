@@ -1,14 +1,13 @@
 {
   "leash": {
-    "primary": "https://amzn.to/3N3Z2Az"
+    "amazon": "https://amzn.to/3N3Z2Az"
   },
   "feather-wand": {
-    "primary": "https://amzn.to/3NmoOjA",
+    "amazon": "https://amzn.to/3NmoOjA",
     "extralink1": "https://amzn.to/4lh9vc9"
   },
   "string-toy": {
-    "primary": "https://s.click.aliexpress.com/e/_olkXEyK",
-    "secondary": "https://amzn.to/3NmoOjA",
-    "extralink1": "https://amzn.to/4lh9vc9"
+    "aliexpress": "https://s.click.aliexpress.com/e/_olkXEyK",
+    "amazon": "https://amzn.to/4h9gGjb"
   }
 }
