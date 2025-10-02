@@ -117,19 +117,10 @@
 		const productName = getProductName();
 		const productLinks = amazonLinks[productName];
 
-		if (!productLinks || !productLinks.primary || !productLinks.secondary) {
-			console.error('Missing Amazon link(s) for product:', productName);
-			return;
-		}
+		if (!productLinks || !productLinks.primary) return;
 
-		const primaryLink = productLinks.primary;
-		const secondaryLink = productLinks.secondary;
-
-		if (isSafari()) {
-			buttonLink.href = primaryLink;
-		} else {
-			buttonLink.href = secondaryLink;
-		}
+    // Always set the button to the primary link
+    buttonLink.href = productLinks.primary;
 	}
 
 	document.addEventListener('DOMContentLoaded', function () {
@@ -157,16 +148,10 @@
 		loadAmazonLinks().then(amazonLinks => {
 			const productName = getProductName();  // Extract the product name from the URL path (e.g., "leash")
 			const productLinks = amazonLinks[productName];
-			if (!productLinks || !productLinks.primary) {
-				console.error('No Amazon link found for this product:', productName);
-				return;
-			}
 
-			// Determine target link for redirect
-			const hash = window.location.hash.substring(1); // "extralink1", "extralink2", etc.
-			let targetLink = productLinks.primary; // default
+			const hash = window.location.hash.substring(1);
+			let targetLink = productLinks.primary; // redirect everyone without anchor to primary
 			if (hash && productLinks[hash]) targetLink = productLinks[hash];
-			else targetLink = isSafari() ? productLinks.primary : productLinks.secondary;
 
 			updateButtonLink(amazonLinks);
 
