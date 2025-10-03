@@ -132,9 +132,7 @@
 
 							// Determine page redirect link from URL hash or fallback to first link
 							const pageHash = ((window.location.hash || '').substring(1).split('?')[0] || '').toLowerCase();
-							const defaultKey = Object.keys(productLinks)[0]; // first key in object
-							const targetKey = pageHash && productLinks[pageHash] ? pageHash : defaultKey;
-							const targetLink = productLinks[targetKey];
+							if (!pageHash || !productLinks[pageHash]) return; // <-- minimal change: stop if no valid hash
 
 							// Update buttons
 							updateButtonLinks(amazonLinks);
@@ -176,8 +174,7 @@
 							}
 					})
 					.catch(err => console.error('Failed to load Amazon links:', err));
-});</script>
-<link rel="icon" href="https://products.outdoorsavannah.com/wp-content/uploads/2025/04/cropped-profile-pic-yt_1.1.2-scaled-2-150x150.webp" sizes="32x32">
+});</script><link rel="icon" href="https://products.outdoorsavannah.com/wp-content/uploads/2025/04/cropped-profile-pic-yt_1.1.2-scaled-2-150x150.webp" sizes="32x32">
 <link rel="icon" href="https://products.outdoorsavannah.com/wp-content/uploads/2025/04/cropped-profile-pic-yt_1.1.2-scaled-2-300x300.webp" sizes="192x192">
 <link rel="apple-touch-icon" href="https://products.outdoorsavannah.com/wp-content/uploads/2025/04/cropped-profile-pic-yt_1.1.2-scaled-2-300x300.webp">
 <meta name="msapplication-TileImage" content="https://products.outdoorsavannah.com/wp-content/uploads/2025/04/cropped-profile-pic-yt_1.1.2-scaled-2-300x300.webp">
