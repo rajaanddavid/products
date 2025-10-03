@@ -28,5 +28,28 @@
     "extralink15": "https://amzn.to/3RzgHT8",
     "extralink16": "https://amzn.to/3G7FjQi",
     "extralink17": "https://amzn.to/3G7FjQi"
+  },
+  "harness": {
+    "amazon": "https://amzn.to/4nMRfHS",
+    "extralink1": "https://amzn.to/4lh9vc9"
+  },
+  "backpack": {
+    "amazon": "https://amzn.to/3sOCsoW"
+  },
+  "rolling-ball-toy": {
+    "amazon": "https://amzn.to/3YQ0QDZ"
+  },
+  "cat-shelves": {
+    "amazon": "https://amzn.to/3UrYedQ"
+  },
+  "sleepypod-mobile-cat-bed": {
+    "amazon": "https://amzn.to/46DyNKL"
+  },
+  "mobile-water-bowl": {
+    "amazon": "https://amzn.to/456uWU5"
+  },
+  "mobile-water-bowl": {
+    "amazon": "https://amzn.to/4nSTOrY",
+    "aliexpress": "https://amzn.to/4nSTOrY"
   }
 }
