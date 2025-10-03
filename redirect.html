@@ -4,44 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Redirecting...</title>
-
-    <style>
-        body {
-            font-family: sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 2rem;
-            text-align: center;
-        }
-        .entry-title { font-size: 1.5rem; margin-bottom: 1rem; }
-        .product-image { max-width: 100%; height: auto; margin-bottom: 1rem; }
-        .buy-button { margin-top: 1rem; }
-    </style>
 </head>
 <body>
-
-<h1 class="entry-title">Loading Product...</h1>
-<img class="product-image" src="" alt="Product Image" />
-<div class="buy-button">
-    <a class="wp-block-button__link" href="#" target="_blank">Buy Now</a>
-</div>
+<!-- This will be replaced dynamically -->
+<div class="loading-message">Loading product...</div>
 
 <script>
-    (function() {
-        // --- Browser / Device Detection ---
+    (async function() {
+        // --- Helpers ---
         function isMobile() { return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent); }
         function isAndroid() { return /Android/i.test(navigator.userAgent); }
         function isIOS() { return /iPhone|iPad|iPod/i.test(navigator.userAgent); }
         function isAppBrowser() { return /Instagram|FBAV|FBAN\/FBIOS|FB_IAB|FB4A|Threads|Barcelona/i.test(navigator.userAgent); }
         function isFacebookBrowser() { return /FBAN\/FBIOS|FBAV|FB_IAB|FB4A/i.test(navigator.userAgent); }
 
-        // --- Helpers ---
-        function getProductName(productPath) {
-            const segments = (productPath || '').split('/').filter(Boolean);
+        function getProductName(path) {
+            const segments = (path || '').split('/').filter(Boolean);
             if (segments[0] === 'product') segments.shift();
-            return segments.join('/'); // e.g., "product/leash" -> "leash"
+            return segments.join('/');
         }
 
         function updateButtonLinks(productName, amazonLinks) {
@@ -58,53 +38,42 @@
                 if (index === 0 && pageHash && links[pageHash]) {
                     btn.href = links[pageHash];
                 } else {
-                    const key = linkKeys[index] || linkKeys[0]; // fallback to first
+                    const key = linkKeys[index] || linkKeys[0];
                     btn.href = links[key];
                 }
             });
         }
 
-        // --- Get product path from query string ---
+        // --- Get product from query string ---
         const params = new URLSearchParams(window.location.search);
         const productPath = params.get('product'); // e.g., "product/leash"
         if (!productPath) {
-            document.querySelector('.entry-title').textContent = 'Error: no product specified';
+            document.body.innerHTML = '<p>Error: No product specified.</p>';
             return;
         }
 
         const productName = getProductName(productPath);
 
-        // --- Load Amazon Links and handle redirects ---
-        fetch('/amazonLinks.json')
-            .then(res => res.json())
-            .then(amazonLinks => {
-                const productLinks = amazonLinks[productName] || {};
-                if (!Object.keys(productLinks).length) {
-                    document.querySelector('.entry-title').textContent = 'Product not found';
-                    return;
+        try {
+            // --- Fetch original product page HTML ---
+            const res = await fetch('/' + productPath + '/'); // must exist as static HTML
+            const html = await res.text();
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+
+            // --- Inject head content (CSS/JS/fonts) ---
+            Array.from(doc.head.children).forEach(node => {
+                if (!document.head.querySelector(node.tagName)) {
+                    document.head.appendChild(node.cloneNode(true));
                 }
+            });
 
-                // --- Update title ---
-                document.querySelector('.entry-title').textContent = productName.replace(/-/g,' ');
+            // --- Inject body content ---
+            document.body.innerHTML = doc.body.innerHTML;
 
-                // --- Optional product image ---
-                document.querySelector('.product-image').src = '/images/' + productName + '.jpg';
-
-                // --- Update Buy Buttons ---
-                updateButtonLinks(productName, amazonLinks);
-
-                // --- Update extralinks ---
-                document.querySelectorAll('a[title^="extralink"]').forEach(link => {
-                    try {
-                        const linkKey = link.getAttribute('title').toLowerCase();
-                        if (productLinks && linkKey && productLinks[linkKey]) {
-                            link.href = productLinks[linkKey];
-                        }
-                    } catch(e) { console.warn('Invalid extralink', link); }
-                });
-
-                // --- Update header for app/browser ---
-                const entryHeader = document.querySelector('.entry-title');
+            // --- Update header for app/browser ---
+            const entryHeader = document.querySelector('.entry-title');
+            if (entryHeader) {
                 if (isAppBrowser()) {
                     if (isAndroid()) entryHeader.textContent = "Redirecting... please continue";
                     else if (isIOS()) {
@@ -113,41 +82,55 @@
                     }
                 } else if (isAndroid()) entryHeader.textContent = "Allow or tap again";
                 else if (isIOS()) entryHeader.textContent = "Redirecting... please wait";
+            }
 
-                // --- Determine redirect link ---
-                const pageHash = ((window.location.hash || '').substring(1).split('?')[0] || '').toLowerCase();
-                const targetKey = pageHash && productLinks[pageHash] ? pageHash : Object.keys(productLinks)[0];
-                const targetLink = targetKey ? productLinks[targetKey] : null;
+            // --- Load Amazon Links and update buttons ---
+            const amazonLinksRes = await fetch('/amazonLinks.json');
+            const amazonLinks = await amazonLinksRes.json();
+            updateButtonLinks(productName, amazonLinks);
 
-                if (!targetLink) return;
+            document.querySelectorAll('a[title^="extralink"]').forEach(link => {
+                try {
+                    const linkKey = link.getAttribute('title').toLowerCase();
+                    const links = amazonLinks[productName];
+                    if (links && linkKey && links[linkKey]) link.href = links[linkKey];
+                } catch(e){ console.warn('Invalid extralink', link); }
+            });
 
-                // --- Perform redirect ---
-                if (!isMobile()) {
+            // --- Determine redirect link ---
+            const pageHash = ((window.location.hash || '').substring(1).split('?')[0] || '').toLowerCase();
+            const targetKey = pageHash && amazonLinks[productName][pageHash] ? pageHash : Object.keys(amazonLinks[productName])[0];
+            const targetLink = targetKey ? amazonLinks[productName][targetKey] : null;
+
+            if (!targetLink) return;
+
+            // --- Perform redirect ---
+            if (!isMobile()) {
+                setTimeout(() => { window.location.href = targetLink; }, 1500);
+            } else {
+                const script = document.createElement('script');
+                script.src = "https://rum.auditzy.com/bcBFmvug-products.outdoorsavannah.com-iar.js";
+                script.async = true;
+                document.head.appendChild(script);
+
+                script.onload = function() {
+                    sessionStorage.setItem('redirected', 'true');
+                    setTimeout(() => {
+                        if (isAndroid()) window.open(targetLink, '_blank');
+                        else window.location.href = targetLink;
+                    }, 1500);
+                };
+                script.onerror = function() {
                     setTimeout(() => { window.location.href = targetLink; }, 1500);
-                } else {
-                    const script = document.createElement('script');
-                    script.src = "https://rum.auditzy.com/bcBFmvug-products.outdoorsavannah.com-iar.js";
-                    script.async = true;
-                    document.head.appendChild(script);
+                };
+            }
 
-                    script.onload = function () {
-                        sessionStorage.setItem('redirected', 'true');
-                        setTimeout(() => {
-                            if (isAndroid()) window.open(targetLink, '_blank');
-                            else window.location.href = targetLink;
-                        }, 1500);
-                    };
-
-                    script.onerror = function () {
-                        setTimeout(() => { window.location.href = targetLink; }, 1500);
-                    };
-                }
-
-            })
-            .catch(err => console.error('Failed to load Amazon links:', err));
+        } catch(e) {
+            document.body.innerHTML = '<p>Failed to load product page.</p>';
+            console.error(e);
+        }
 
     })();
 </script>
-
 </body>
 </html>
