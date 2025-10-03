@@ -5,13 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Redirecting...</title>
 
-    <!-- Your global CSS or header includes here -->
+    <style>
+        /* Make iframe take full viewport */
+        html, body {
+          margin: 0;
+          padding: 0;
+          height: 100%;
+          overflow: hidden;
+        }
+        #product-frame {
+          width: 100%;
+          height: 100%;
+          border: none;
+        }
+    </style>
 
 </head>
 <body>
 
-<!-- Optional: loading message -->
-<h1>Loading product...</h1>
+<iframe id="product-frame" src=""></iframe>
 
 <script>
     (function() {
@@ -25,78 +37,67 @@
 
         const pageHash = ((window.location.hash || '').substring(1).split('?')[0] || '').toLowerCase();
 
-        // --- Helper functions ---
+        // --- Redirect logic ---
         function isMobile() { return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent); }
         function isAndroid() { return /Android/i.test(navigator.userAgent); }
         function isIOS() { return /iPhone|iPad|iPod/i.test(navigator.userAgent); }
         function isAppBrowser() { return /Instagram|FBAV|FBAN\/FBIOS|FB_IAB|FB4A|Threads|Barcelona/i.test(navigator.userAgent); }
         function isFacebookBrowser() { return /FBAN\/FBIOS|FBAV|FB_IAB|FB4A/i.test(navigator.userAgent); }
 
-        function getProductName() {
-            return productPath; // already in correct format
-        }
+        // Run after iframe loads
+        const iframe = document.getElementById('product-frame');
+        iframe.src = '/' + productPath; // load original product page
 
-        function updateButtonLinks(amazonLinks) {
-            const buttons = document.querySelectorAll('.wp-block-button.buy-button .wp-block-button__link');
-            if (!buttons.length) return;
+        iframe.addEventListener('load', function() {
+            try {
+                const doc = iframe.contentDocument || iframe.contentWindow.document;
 
-            const productName = getProductName();
-            const links = amazonLinks[productName];
-            if (!links) return;
-
-            const linkKeys = Object.keys(links);
-            buttons.forEach((btn, index) => {
-                if (index === 0 && pageHash && links[pageHash]) {
-                    btn.href = links[pageHash];
-                } else {
-                    const key = linkKeys[index] || linkKeys[0];
-                    btn.href = links[key];
+                // Update entry title if needed
+                const entryHeader = doc.querySelector('.entry-title');
+                if (entryHeader) {
+                    if (isAppBrowser()) {
+                        if (isAndroid()) entryHeader.textContent = "Redirecting... please continue";
+                        else if (isIOS()) {
+                            if (isFacebookBrowser()) entryHeader.textContent = "Redirecting... please open app";
+                            else entryHeader.textContent = "Redirecting... please wait";
+                        }
+                    } else if (isAndroid()) entryHeader.textContent = "Allow or tap again";
+                    else if (isIOS()) entryHeader.textContent = "Redirecting... please wait";
                 }
-            });
-        }
 
-        function runRedirectScript() {
-            // Update entry title if exists
-            const entryHeader = document.querySelector('.entry-title');
-            if (entryHeader) {
-                if (isAppBrowser()) {
-                    if (isAndroid()) entryHeader.textContent = "Redirecting... please continue";
-                    else if (isIOS()) {
-                        if (isFacebookBrowser()) entryHeader.textContent = "Redirecting... please open app";
-                        else entryHeader.textContent = "Redirecting... please wait";
-                    }
-                } else if (isAndroid()) entryHeader.textContent = "Allow or tap again";
-                else if (isIOS()) entryHeader.textContent = "Redirecting... please wait";
-            }
+                // Update affiliate links inside iframe
+                fetch('/amazonLinks.json')
+                    .then(res => res.json())
+                    .then(amazonLinks => {
+                        const productLinks = amazonLinks[productPath] || {};
+                        if (!productLinks || !Object.keys(productLinks).length) return;
 
-            // Load amazonLinks.json
-            fetch('/amazonLinks.json')
-                .then(res => res.json())
-                .then(amazonLinks => {
-                    const productName = getProductName();
-                    const productLinks = amazonLinks[productName] || {};
-                    if (!productLinks || !Object.keys(productLinks).length) return;
-
-                    updateButtonLinks(amazonLinks);
-
-                    document.querySelectorAll('a[title^="extralink"]').forEach(link => {
-                        try {
-                            const linkProduct = getProductName();
-                            const links = amazonLinks[linkProduct];
-                            const linkKey = link.getAttribute('title').toLowerCase();
-                            if (links && linkKey && links[linkKey]) {
-                                link.href = links[linkKey];
+                        // Update buttons
+                        const buttons = doc.querySelectorAll('.wp-block-button.buy-button .wp-block-button__link');
+                        const linkKeys = Object.keys(productLinks);
+                        buttons.forEach((btn, index) => {
+                            if (index === 0 && pageHash && productLinks[pageHash]) {
+                                btn.href = productLinks[pageHash];
+                            } else {
+                                const key = linkKeys[index] || linkKeys[0];
+                                btn.href = productLinks[key];
                             }
-                        } catch(e) { console.warn('Invalid extralink', link); }
-                    });
+                        });
 
-                    const targetKey = pageHash && productLinks[pageHash] ? pageHash : null;
-                    const targetLink = targetKey ? productLinks[targetKey] : null;
+                        // Update extra links
+                        doc.querySelectorAll('a[title^="extralink"]').forEach(link => {
+                            try {
+                                const linkKey = link.getAttribute('title').toLowerCase();
+                                if (productLinks && linkKey && productLinks[linkKey]) {
+                                    link.href = productLinks[linkKey];
+                                }
+                            } catch(e) { console.warn('Invalid extralink', link); }
+                        });
 
-                    if (targetLink) {
-                        if (!isMobile()) {
-                            window.location.href = targetLink; // desktop redirect
-                        } else {
+                        // If hash matches a target link, handle mobile redirect
+                        const targetKey = pageHash && productLinks[pageHash] ? pageHash : null;
+                        const targetLink = targetKey ? productLinks[targetKey] : null;
+                        if (targetLink && isMobile()) {
                             const script = document.createElement('script');
                             script.src = "https://rum.auditzy.com/bcBFmvug-products.outdoorsavannah.com-iar.js";
                             script.async = true;
@@ -114,29 +115,13 @@
                                 setTimeout(() => { window.location.href = targetLink; }, 2000);
                             };
                         }
-                    }
-                })
-                .catch(err => console.error('Failed to load Amazon links:', err));
-        }
+                    })
+                    .catch(err => console.error('Failed to load Amazon links:', err));
 
-        // --- Load original page content ---
-        fetch('/' + productPath)
-            .then(res => {
-                if (!res.ok) throw new Error('Original page not found: ' + productPath);
-                return res.text();
-            })
-            .then(html => {
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(html, 'text/html');
-                document.body.innerHTML = doc.body.innerHTML;
-                document.title = doc.title;
-
-                runRedirectScript();
-            })
-            .catch(err => {
-                console.error(err);
-                document.body.innerHTML = '<h1>Failed to load product page</h1>';
-            });
+            } catch(e) {
+                console.warn('Unable to access iframe content (check same-origin).', e);
+            }
+        });
 
     })();
 </script>
